@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+  svg {
+    background-color: #f0f0f0;
+  }
+
+  .graticule {
+    stroke: #aaa;
+    fill :none;
+  }
+
+  .countries {
+    fill: #b48323;
+    stroke-width: .5px;
+    fill-opacity: .3;
+    stroke: #f0f0f0;
+  }
+
+  .rivers {
+    stroke: #418ac7;
+    stroke-width: 1px;
+    fill: none;
+    pointer-events: none;
+  }
+
+  .countries.active {
+    fill-opacity: 1;
+  }
+
+</style>
+
+<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-pink.min.css">
+<script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<body>
+</body>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+<script src="d3.chart.js"></script>
+<script src="atlas.js"></script>
+<script src="app.js"></script>
