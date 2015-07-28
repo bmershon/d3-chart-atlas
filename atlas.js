@@ -69,7 +69,12 @@ d3.chart("atlas", {
             //register user interaction events
             if (layer.interactions) {
               for(e in layer.interactions) {
-                selection.on(e, layer.interactions[e]);
+                if(layer.interactions.hasOwnProperty(e)) {
+                  selection.on(e.toString(), function(d, i) {
+                    _this = this;
+                    layer.interactions[e].call(_this, d, i, chart)
+                  });
+                }
               }
             }
 
