@@ -12,27 +12,36 @@
         .attr("height", height);
 
 
-
   var dispatch = d3.dispatch("zoomToFeature");
-
-  dispatch
 
   var options = {};
   options.layers = [];
+  options.dispatch = dispatch;
 
-
-  function mouseenter(d, i, instance) {
-    d3.select(this).classed("active", true)
+  function mouseenter(d, i) {
+    d3.select(this).classed("highlight", true);
   }
 
-  function mouseleave(d, i, instance) {
-    d3.select(this).classed("active", false)
+  function mouseleave(d, i) {
+    d3.select(this).classed("highlight", false);
+  }
+
+  function click(d, i) {
+    d3.select(this).classed("highlight", false);
+    d3.selectAll(".countries").classed("active", false)
+    d3.select(this).classed("active", true);
+    dispatch.zoomToFeature.apply(this, arguments);
   }
 
   options.layers.push({
     class: "countries",
     object: "countries",
     id: function(d, i) {return "country-" + i},
+    interactions: {
+      "mouseenter": mouseenter,
+      "mouseleave": mouseleave,
+      "click": click
+    }
   });
 
   // another layer of rivers, with no interactions

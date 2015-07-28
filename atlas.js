@@ -12,7 +12,8 @@ d3.chart("atlas", {
     chart.base = chart.base.append("g").attr("class", "base")
 
     chart.options = options || {};
-    chart.w = chart.base.attr("width") || 960;
+
+    chart._w = chart.base.attr("width") || 960;
     chart.h = chart.base.attr("height") || 500;
 
     chart._projection = d3.geo.orthographic().clipAngle(90);
@@ -46,6 +47,14 @@ d3.chart("atlas", {
       return this.remove();
     }
 
+
+    if(options.dispatch) {
+      chart.dispatch = options.dispatch;
+      chart.dispatch.on("zoomToFeature", function(d, i) {
+        chart.zoomToFeature(d);
+      })
+    }
+
     chart.options.layers.forEach(function(layer) {
 
       var layerBase = chart.base
@@ -66,6 +75,16 @@ d3.chart("atlas", {
                 .classed(layer.classed || "", true)
                 .attr("id", layer.id);
 
+
+            // register all named user interaction types and callbacks
+            if(layer.interactions) {
+              for(e in layer.interactions) {
+                if(layer.interactions.hasOwnProperty(e)){
+                  selection.on(e, layer.interactions[e]);
+                }
+              }
+            }
+
             return selection;
         },
 
@@ -76,6 +95,13 @@ d3.chart("atlas", {
         }
       });
     })
+
+
+    // translate and scale SVG, don't change projection
+    chart.zoomToFeature = function(feature) {
+      // TODO
+      return this;
+    }
 
     chart.on("change:projection", function() {
 
@@ -100,9 +126,9 @@ d3.chart("atlas", {
 
   width: function(_) {
     if (arguments.length === 0) {
-      return this.w;
+      return this._w;
     }
-    this.w = _;
+    this._w = _;
     return this;
   },
 
@@ -217,8 +243,8 @@ d3.chart("atlas", {
 
       var mesh = topojson.mesh(this.topology, this.topology.objects[layerObject]);
       var b = this._path.bounds(mesh),
-        s = .95 / Math.max((b[1][0] - b[0][0]) / this.w, (b[1][1] - b[0][1]) / this.h),
-        t = [(this.w - s * (b[1][0] + b[0][0])) / 2, (this.h - s * (b[1][1] + b[0][1])) / 2];
+        s = .95 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this.h),
+        t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this.h - s * (b[1][1] + b[0][1])) / 2];
 
       this._scale = s;
       this._translate = t;
@@ -226,15 +252,6 @@ d3.chart("atlas", {
       this.trigger("change:projection");
     }
 
-    return this;
-  },
-
-  /*
-    Translate and scale the base group
-  */
-  zoomToFeature(_) {
-
-    // TODO
     return this;
   }
 
