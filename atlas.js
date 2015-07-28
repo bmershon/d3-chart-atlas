@@ -14,7 +14,7 @@ d3.chart("atlas", {
     chart.options = options || {};
 
     chart._w = chart.base.attr("width") || 960;
-    chart.h = chart.base.attr("height") || 500;
+    chart._h = chart.base.attr("height") || 500;
 
     chart._projection = d3.geo.orthographic().clipAngle(90);
     chart._path = d3.geo.path();
@@ -24,6 +24,8 @@ d3.chart("atlas", {
     chart._translate = [0, 0];
     chart._rotation = [0,0,0];
     chart._path.projection(chart._projection)
+
+    chart._activeFeature = null;
 
     var layerGraticule = chart.base
                               .append("g")
@@ -51,8 +53,17 @@ d3.chart("atlas", {
     if(options.dispatch) {
       chart.dispatch = options.dispatch;
       chart.dispatch.on("zoomToFeature", function(d, i) {
+        if(this === chart._activeFeature) {
+          chart.dispatch.resetAffine();
+          return;
+        }
+        chart._activeFeature = this;
         chart.zoomToFeature(d);
-      })
+      });
+
+      chart.dispatch.on("resetAffine", function(d, i) {
+        chart.resetAffine();
+      });
     }
 
     chart.options.layers.forEach(function(layer) {
@@ -96,20 +107,34 @@ d3.chart("atlas", {
       });
     })
 
-
     // translate and scale SVG, don't change projection
     chart.zoomToFeature = function(d) {
       var b = this._path.bounds(d),
-        s = .95 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this.h),
-        t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this.h - s * (b[1][1] + b[0][1])) / 2];
-
-      console.debug(b, s, t)
+        s = .9 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this._h),
+        t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this._h - s * (b[1][1] + b[0][1])) / 2];
 
       chart.base.transition()
           .duration(750)
           .attr("transform", "translate(" + t + ")scale(" + s + ")");
+    }
 
-      return this;
+
+    // translate and scale SVG, don't change projection
+    chart.projectToFeature = function(d) {
+      var b = this._path.bounds(d),
+        s = .9 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this._h),
+        t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this._h - s * (b[1][1] + b[0][1])) / 2];
+
+      this._scale = s;
+      this._translate = t;
+
+      this.trigger("change:projection");
+    }
+
+    chart.resetAffine = function() {
+      chart.base.transition()
+          .duration(750)
+          .attr("transform", "");
     }
 
     chart.on("change:projection", function() {
@@ -143,9 +168,9 @@ d3.chart("atlas", {
 
   height: function(_) {
     if (arguments.length === 0) {
-      return this.h;
+      return this._h;
     }
-    this.h = _;
+    this._h = _;
     return this;
   },
 
@@ -252,8 +277,8 @@ d3.chart("atlas", {
 
       var mesh = topojson.mesh(this.topology, this.topology.objects[layerObject]);
       var b = this._path.bounds(mesh),
-        s = .95 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this.h),
-        t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this.h - s * (b[1][1] + b[0][1])) / 2];
+        s = .9 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this._h),
+        t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this._h - s * (b[1][1] + b[0][1])) / 2];
 
       this._scale = s;
       this._translate = t;

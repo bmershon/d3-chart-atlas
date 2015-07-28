@@ -11,28 +11,14 @@
         .attr("width", width)
         .attr("height", height);
 
-
-  var dispatch = d3.dispatch("zoomToFeature");
+  // events
+  var dispatch = d3.dispatch("zoomToFeature","resetAffine");
 
   var options = {};
   options.layers = [];
   options.dispatch = dispatch;
 
-  function mouseenter(d, i) {
-    d3.select(this).classed("highlight", true);
-  }
-
-  function mouseleave(d, i) {
-    d3.select(this).classed("highlight", false);
-  }
-
-  function click(d, i) {
-    d3.select(this).classed("highlight", false);
-    d3.selectAll(".countries").classed("active", false)
-    d3.select(this).classed("active", true);
-    dispatch.zoomToFeature.apply(this, arguments);
-  }
-
+  // layer defined, with UI event callbacks
   options.layers.push({
     class: "countries",
     object: "countries",
@@ -51,15 +37,30 @@
     object: "ne_10m_rivers_lake_centerlines" // identify the topology object for the layer
   });
 
+  function mouseenter(d, i) {
+    d3.select(this).classed("highlight", true);
+  }
+
+  function mouseleave(d, i) {
+    d3.select(this).classed("highlight", false);
+  }
+
+  function click(d, i) {
+    d3.select(this).classed("highlight", false);
+    d3.selectAll(".countries").classed("active", false)
+    d3.select(this).classed("active", true);
+
+    dispatch.zoomToFeature.apply(this, arguments);
+  }
+
   var m = svg.chart("atlas", options)
-             .precision(0.1)
-             .graticule(d3.geo.graticule().outline())
-             .projection(d3.geo.robinson());
+             .precision(0.1) // optional
+             .graticule(d3.geo.graticule().outline) // optional
+             .projection(d3.geo.kavrayskiy7()); // optional
 
   queue()
     .defer(d3.json, "combined.json")
     .await(ready);
-
 
   function ready(error, topology) {
     data = topology;
