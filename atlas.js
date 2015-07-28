@@ -98,8 +98,17 @@ d3.chart("atlas", {
 
 
     // translate and scale SVG, don't change projection
-    chart.zoomToFeature = function(feature) {
-      // TODO
+    chart.zoomToFeature = function(d) {
+      var b = this._path.bounds(d),
+        s = .95 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this.h),
+        t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this.h - s * (b[1][1] + b[0][1])) / 2];
+
+      console.debug(b, s, t)
+
+      chart.base.transition()
+          .duration(750)
+          .attr("transform", "translate(" + t + ")scale(" + s + ")");
+
       return this;
     }
 
