@@ -11,8 +11,15 @@
         .attr("width", width)
         .attr("height", height);
 
+
+
+  var dispatch = d3.dispatch("zoomToFeature");
+
+  dispatch
+
   var options = {};
   options.layers = [];
+
 
   function mouseenter(d, i, instance) {
     d3.select(this).classed("active", true)
@@ -22,18 +29,10 @@
     d3.select(this).classed("active", false)
   }
 
-  function click(d, i, instance) {
-    instance.zoomToFeature(d);
-  }
-
   options.layers.push({
     class: "countries",
     object: "countries",
-    id: "john",
-    interactions: {
-      "mouseenter": mouseenter,
-      "mouseleave": mouseleave
-    }
+    id: function(d, i) {return "country-" + i},
   });
 
   // another layer of rivers, with no interactions
@@ -57,8 +56,6 @@
     data = topology;
     m.draw(data);
     m.zoomToLayer("countries"); // use bounding box of the union of all countries
-
-    console.log(m)
   }
 
 })();
