@@ -48,8 +48,6 @@ d3.chart("atlas", {
 
     chart.options.layers.forEach(function(layer) {
 
-      layer.interactions = layer.interactions || {};
-
       var layerBase = chart.base
                            .append("g")
                            .attr("class", "layer-base-"+layer.object);
@@ -68,12 +66,17 @@ d3.chart("atlas", {
                 .classed(layer.classed || "", true)
                 .attr("id", layer.id);
 
-            for (e in layer.interactions) {
-              selection.on(e, layer.interactions[e]);
+            //register user interaction events
+            if (layer.interactions) {
+              for(e in layer.interactions) {
+                selection.on(e, layer.interactions[e]);
+              }
             }
 
             return selection;
         },
+
+        // register lifecyle events
         events: layer.events || {
           "merge": merge,
           "exit": exit
@@ -186,7 +189,6 @@ d3.chart("atlas", {
     return this;
   },
 
-
   rotate: function(_) {
     if (arguments.length === 0) {
       return this._rotation;
@@ -207,8 +209,10 @@ d3.chart("atlas", {
     change the map projection
     intended for initial setup, where the appropriate bounding box for an
     entire array of paths belonging to a layer is unknown
+
+    _ is layer object name
   */
-  zoomToLayer(_) {
+  zoomToLayer: function(_) {
     if (arguments.length === 0) {
       return this._projection;
     }

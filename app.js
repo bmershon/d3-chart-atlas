@@ -14,19 +14,25 @@
   var options = {};
   options.layers = [];
 
-  // this is how you define a layer of countries for the map
+  function mouseenter(d, i, instance) {
+    d3.select(this).classed("active", true)
+  }
+
+  function mouseleave(d, i, instance) {
+    d3.select(this).classed("active", false)
+  }
+
+  function click(d, i, instance) {
+    instance.zoomToFeature(d);
+  }
+
   options.layers.push({
-    class: "countries", // use for CSS
-    object: "countries", // identify the topology object for the layer
-    interactions: { // user-interaction event handlers to register for this layer's paths
-    id: function(d, i) {return i}, // values or function can be used
-      // this context is the DOM element, chart is a reference to the chart
-      "mouseenter": function(d, i) {
-        d3.select(this).classed("active", true);
-      },
-      "mouseleave": function(d, i) {
-        d3.select(this).classed("active", false)
-      }
+    class: "countries",
+    object: "countries",
+    id: "john",
+    interactions: {
+      "mouseenter": mouseenter,
+      "mouseleave": mouseleave
     }
   });
 
@@ -51,6 +57,8 @@
     data = topology;
     m.draw(data);
     m.zoomToLayer("countries"); // use bounding box of the union of all countries
+
+    console.log(m)
   }
 
 })();
