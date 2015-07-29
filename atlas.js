@@ -69,7 +69,6 @@
     if(options.dispatch) {
       chart.dispatch = options.dispatch;
       chart.dispatch.on("zoomToFeature", function(d, i) {
-        chart._activeFeature = this;
         chart.zoomToFeature(d);
       });
 
@@ -130,18 +129,6 @@
           .attr("transform", "translate(" + t + ")scale(" + s + ")");
     }
 
-    // translate and scale SVG, don't change projection
-    chart.projectToFeature = function(d) {
-     var b = this._path.bounds(d),
-       s = .9 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this._h),
-       t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this._h - s * (b[1][1] + b[0][1])) / 2];
-
-     this._scale = s;
-     this._translate = t;
-
-     this.trigger("change:projection");
-    }
-
     // zero the base transform and scale
     chart.resetAffine = function() {
      chart.base
@@ -170,7 +157,6 @@
         this.draw(this.data);
       }
     });
-
   }
 
   function _width(_) {
@@ -279,6 +265,7 @@
     }
 
     var chart = this;
+
     if(this.data) {
 
       var layerObject = _;
