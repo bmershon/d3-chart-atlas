@@ -151,15 +151,14 @@
                 .rotate(chart._rotation)
                 .precision(chart._precision)
                 .translate(chart._translate);
+
+          layerGraticule
+                .datum(chart._graticule)
+                .attr("d", chart._path)
+                .attr("class", "graticule");
         }
 
-
         chart._path.projection(chart._projection);
-
-        layerGraticule
-              .datum(chart._graticule)
-              .attr("d", chart._path)
-              .attr("class", "graticule");
 
         this.draw(this.data);
       }
