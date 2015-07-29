@@ -26,7 +26,8 @@
     interactions: {
       "mouseenter": mouseenter,
       "mouseleave": mouseleave,
-      "click": click
+      "click": click,
+      "dblclick": dblclick
     }
   });
 
@@ -52,6 +53,10 @@
 
     // allows for interaction with the map's functions
     dispatch.zoomToFeature.apply(this, arguments);
+  }
+
+  function dblclick(d, i) {
+    dispatch.resetAffine.apply(this);
   }
 
   var m = svg.chart("atlas", options)

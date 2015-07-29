@@ -13,7 +13,7 @@
   // optional data transform "hook" method to transform incoming data
   configuration.transform = _transform;
 
-  // getters/setters
+  // accessors and mutators
   configuration.width = _width;
   configuration.height = _height;
   configuration.projection = _projection;
@@ -39,7 +39,6 @@
     chart._scale = 1;
     chart._translate = [0, 0];
     chart._rotation = [0,0,0];
-    chart._activeFeature = null;
 
     var layerGraticule = chart.base
                               .append("g")
@@ -70,16 +69,12 @@
     if(options.dispatch) {
       chart.dispatch = options.dispatch;
       chart.dispatch.on("zoomToFeature", function(d, i) {
-        if(this === chart._activeFeature) {
-          chart.dispatch.resetAffine();
-          return;
-        }
         chart._activeFeature = this;
         chart.zoomToFeature(d);
       });
 
       chart.dispatch.on("resetAffine", function(d, i) {
-      chart.resetAffine();
+        chart.resetAffine();
       });
     }
 
@@ -129,9 +124,10 @@
        s = .9 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this._h),
        t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this._h - s * (b[1][1] + b[0][1])) / 2];
 
-     chart.base.transition()
-         .duration(750)
-         .attr("transform", "translate(" + t + ")scale(" + s + ")");
+     chart.base
+        .transition()
+          .duration(750)
+          .attr("transform", "translate(" + t + ")scale(" + s + ")");
     }
 
     // translate and scale SVG, don't change projection
@@ -148,9 +144,10 @@
 
     // zero the base transform and scale
     chart.resetAffine = function() {
-     chart.base.transition()
-         .duration(750)
-         .attr("transform", "");
+     chart.base
+        .transition()
+          .duration(750)
+          .attr("transform", "");
     }
 
     chart.on("change:projection", function() {
