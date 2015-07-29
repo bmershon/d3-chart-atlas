@@ -50,12 +50,12 @@
     d3.selectAll(".countries").classed("active", false)
     d3.select(this).classed("active", true);
 
+    // allows for interaction with the map's functions
     dispatch.zoomToFeature.apply(this, arguments);
   }
 
   var m = svg.chart("atlas", options)
-             .precision(0.1) // optional
-             .graticule(d3.geo.graticule().outline) // optional
+             .graticule(d3.geo.graticule().outline)
              .projection(d3.geo.kavrayskiy7()); // optional
 
   queue()
