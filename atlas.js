@@ -179,7 +179,7 @@
     if (arguments.length === 0) {
       return this._projection;
     }
-    if (_) this._projection = _;
+    this._projection = _;
     return this;
   }
 
