@@ -48,11 +48,14 @@
     function merge() {
       var chart = this.chart();
 
-      chart._projection
-           .scale(chart._scale)
-           .rotate(chart._rotation)
-           .precision(chart._precision)
-           .translate(chart._translate);
+      if (chart._projection) {
+        chart._projection
+             .scale(chart._scale)
+             .rotate(chart._rotation)
+             .precision(chart._precision)
+             .translate(chart._translate);
+      }
+
 
       chart._path.projection(chart._projection);
 
@@ -141,11 +144,15 @@
 
       if (this.data) {
 
-        chart._projection
-              .scale(chart._scale)
-              .rotate(chart._rotation)
-              .precision(chart._precision)
-              .translate(chart._translate)
+        if(chart._projection) {
+          console.debug("projection", chart._projection)
+          chart._projection
+                .scale(chart._scale)
+                .rotate(chart._rotation)
+                .precision(chart._precision)
+                .translate(chart._translate);
+        }
+
 
         chart._path.projection(chart._projection);
 
