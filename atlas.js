@@ -23,6 +23,7 @@
   configuration.translate = _translate;
   configuration.center = _center;
   configuration.precision = _precision;
+  configuration.pointRadius = _pointRadius;
   configuration.zoomToLayer = _zoomToLayer;
 
   function _initialize(options) {
@@ -56,8 +57,8 @@
              .translate(chart._translate);
       }
 
-
-      chart._path.projection(chart._projection);
+      chart._path.projection(chart._projection)
+           .pointRadius(chart._pointRadius);
 
       return this.attr("d", chart._path);
     }
@@ -160,7 +161,8 @@
                 .attr("class", "graticule");
         }
 
-        chart._path.projection(chart._projection);
+        chart._path.projection(chart._projection)
+             .pointRadius(chart._pointRadius);
 
         this.draw(this.data);
       }
@@ -284,6 +286,15 @@
     return this;
   }
 
+  function _pointRadius(_) {
+    if (arguments.length === 0) {
+      return this._pointRadius;
+    }
+    if (_) this._pointRadius = _;
+    this.trigger("change:projection");
+    return this;
+  }
+
   function _zoomToLayer(_) {
     if (arguments.length === 0) {
       return this._projection;
@@ -302,7 +313,7 @@
       this._scale = s;
       this._translate = t;
     }
-    
+
     this.trigger("change:projection");
     return this;
   }

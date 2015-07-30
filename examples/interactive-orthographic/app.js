@@ -27,16 +27,16 @@
   var options = {};
   options.layers = [];
 
-
   options.layers.push({
     class: "countries",
-    object: "land"
+    object: "countries",
+    id: function(d, i) {return "country-" + i}
   });
-
 
   // optional projection, orthographic is the default
   var m = svg.chart("atlas", options)
-             .projection(d3.geo.orthographic().clipAngle(90));
+             .graticule(d3.geo.graticule().step([20, 20]))
+             .projection(d3.geo.orthographic().clipAngle(90 + 10e-6));
 
   queue()
     .defer(d3.json, "combined.json")
@@ -45,7 +45,7 @@
   function ready(error, topology) {
     data = topology;
     m.draw(data)
-     .zoomToLayer("land");
+     .zoomToLayer("countries");
 
     svg.on("mousemove", function() {
       var p = d3.mouse(this);
