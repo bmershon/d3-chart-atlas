@@ -88,20 +88,21 @@
                            .append("g")
                            .attr("class", "layer-base-"+layer.object);
 
-      layerConfig = {
+      var layerConfig = {
           dataBind: layer.databind || function(data) {
             var chart = this.chart();
 
-            var toBind = (Array.isArray(data[layer.object]) ? data[layer.object] : [data[layer.object]])
+            var toBind = (Array.isArray(data[layer.object]) ? data[layer.object] : [data[layer.object]]);
+            toBind = (layer.filter) ? toBind.filter(layer.filter) : toBind;
 
-            return this.selectAll("."+layer.class)
+            return this.selectAll("."+layer.object)
                         .data(toBind);
           },
           insert: layer.insert || function() {
             var chart = this.chart();
             var selection = this.append("path")
-                                .attr("class", layer.class)
-                                .classed(layer.classed || "", true)
+                                .attr("class", layer.class || layer.object)
+                                .classed(layer.object, true)
                                 .attr("id", layer.id || function(d, i) {return i});
 
             if(layer.interactions) {
