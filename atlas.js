@@ -17,7 +17,7 @@
   configuration.width = _width;
   configuration.height = _height;
   configuration.projection = _projection;
-  configuration.rotation = _rotate;
+  configuration.rotate = _rotate;
   configuration.graticule = _graticule;
   configuration.scale = _scale;
   configuration.translate = _translate;
@@ -71,6 +71,7 @@
 
     if(options.dispatch) {
       chart.dispatch = options.dispatch;
+
       chart.dispatch.on("zoomToFeature", function(d, i) {
         chart.zoomToFeature(d);
       });
@@ -90,15 +91,17 @@
           dataBind: layer.databind || function(data) {
             var chart = this.chart();
 
+            var toBind = (Array.isArray(data[layer.object]) ? data[layer.object] : [data[layer.object]])
+
             return this.selectAll("."+layer.class)
-            .data(data[layer.object]);
+                        .data(toBind);
           },
           insert: layer.insert || function() {
             var chart = this.chart();
             var selection = this.append("path")
                                 .attr("class", layer.class)
                                 .classed(layer.classed || "", true)
-                                .attr("id", layer.id);
+                                .attr("id", layer.id || function(d, i) {return i});
 
             if(layer.interactions) {
               for(e in layer.interactions) {
@@ -145,7 +148,6 @@
       if (this.data) {
 
         if(chart._projection) {
-          console.debug("projection", chart._projection)
           chart._projection
                 .scale(chart._scale)
                 .rotate(chart._rotation)
@@ -170,6 +172,7 @@
       return this._w;
     }
     this._w = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -178,6 +181,7 @@
       return this._h;
     }
     this._h = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -186,6 +190,7 @@
       return this._projection;
     }
     this._projection = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -194,6 +199,7 @@
       return this._path;
     }
     if (_) this._path = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -202,25 +208,33 @@
       return this._graticule;
     }
     this._graticule = _;
+    this.trigger("change:projection");
     return this;
   }
 
   function _transform(data) {
+
     var chart = this;
 
+    // data is not new; data has already been transformed
     if(!(data.type == "Topology")) return data;
-
-    this.topology = data;
-
 
     var t = {};
 
     this.options.layers.forEach(function(layer) {
-      t[layer.object] = topojson.feature(data, data.objects[layer.object]).features;
+      if(data.objects[layer.object].type == "GeometryCollection") {
+        t[layer.object] = topojson.feature(data, data.objects[layer.object]).features;
+      }
+
+      if(data.objects[layer.object].type == "MultiPolygon") {
+        t[layer.object] = topojson.feature(data, data.objects[layer.object]);
+      }
     })
 
+    this.topology = data;
     this.data = t;
 
+    // currentlying being used to update graticule
     chart.trigger("change:projection");
     return t;
   }
@@ -230,6 +244,7 @@
       return this._scale;
     }
     if (_) this._center = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -238,6 +253,7 @@
       return this._scale;
     }
     if (_) this._center = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -246,6 +262,7 @@
       return this._precision;
     }
     if (_) this._precision = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -254,6 +271,7 @@
       return this._rotation;
     }
     if (_) this._rotation = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -262,6 +280,7 @@
       return this._translate;
     }
     if (_) this._translate = _;
+    this.trigger("change:projection");
     return this;
   }
 
@@ -273,7 +292,6 @@
     var chart = this;
 
     if(this.data) {
-
       var layerObject = _;
 
       var mesh = topojson.mesh(this.topology, this.topology.objects[layerObject]);
@@ -283,13 +301,13 @@
 
       this._scale = s;
       this._translate = t;
-
-      this.trigger("change:projection");
     }
-
+    
+    this.trigger("change:projection");
     return this;
   }
 
-  // create d3.chart generator from configuration
+  // create d3.chart generator from configuration object, which includes
+  // initialize, transform, accessors/mutators ...
   d3.chart("atlas", configuration);
 }();

@@ -3,7 +3,14 @@
 <style>
 
   svg {
-    background-color: #f0f0f0;
+    top: 0;
+    position: absolute;
+    cursor: crosshair;
+  }
+
+  #fps {
+    position: relative;
+    top: 0;
   }
 
   .graticule {
@@ -40,6 +47,9 @@
 <script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <body>
+  <div id="map">
+    <div id="timer">Delay: <span>?</span> ms</div>
+  </div>
 </body>
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>

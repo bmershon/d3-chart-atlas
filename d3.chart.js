@@ -488,6 +488,9 @@ Chart.prototype.draw = function(data) {
 		}
 		this._attached[attachmentName].draw(attachmentData);
 	}
+
+	// EXPERIMENTAL
+	return this;
 };
 
 /**

@@ -4,64 +4,39 @@
   var width = 960,
       height = 500;
 
+  var λ = d3.scale.linear()
+      .domain([0, width])
+      .range([-180, 180]);
+
+  var φ = d3.scale.linear()
+      .domain([0, height])
+      .range([90, -90]);
+
+  var time0 = Date.now(),
+      time1;
+
+  var timer = d3.select("#timer span");
+
   var data;
 
-  var svg = d3.select("body")
+  var svg = d3.select("#map")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
 
-  // events
-  var dispatch = d3.dispatch("zoomToFeature","resetAffine");
-
   var options = {};
   options.layers = [];
-  options.dispatch = dispatch;
 
-  // layer defined, with UI event callbacks
+
   options.layers.push({
     class: "countries",
-    object: "countries",
-    id: function(d, i) {return "country-" + i},
-    interactions: {
-      "mouseenter": mouseenter,
-      "mouseleave": mouseleave,
-      "click": click,
-      "dblclick": dblclick
-    }
+    object: "land"
   });
 
-  // another layer of rivers, with no interactions
-  options.layers.push({
-    class: "rivers",
-    id: function(d, i) {return i},
-    object: "ne_10m_rivers_lake_centerlines" // identify the topology object for the layer
-  });
 
-  function mouseenter(d, i) {
-    d3.select(this).classed("highlight", true);
-  }
-
-  function mouseleave(d, i) {
-    d3.select(this).classed("highlight", false);
-  }
-
-  function click(d, i) {
-    d3.select(this).classed("highlight", false);
-    d3.selectAll(".countries").classed("active", false)
-    d3.select(this).classed("active", true);
-
-    // allows for interaction with the map's functions
-    dispatch.zoomToFeature.apply(this, arguments);
-  }
-
-  function dblclick(d, i) {
-    dispatch.resetAffine.apply(this);
-  }
-
+  // optional projection, orthographic is the default
   var m = svg.chart("atlas", options)
-             .graticule(d3.geo.graticule().outline)
-             .projection(d3.geo.kavrayskiy7()); // optional
+             .projection(d3.geo.orthographic().clipAngle(90));
 
   queue()
     .defer(d3.json, "combined.json")
@@ -69,8 +44,17 @@
 
   function ready(error, topology) {
     data = topology;
-    m.draw(data);
-    m.zoomToLayer("countries"); // use bounding box of the union of all countries
+    m.draw(data)
+     .zoomToLayer("land");
+
+    svg.on("mousemove", function() {
+      var p = d3.mouse(this);
+      time0 = Date.now();
+      m.rotate([λ(p[0]), φ(p[1])]);
+      time1 = Date.now();
+      timer.text((time1 - time0));
+    });
+
   }
 
 })();
