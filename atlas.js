@@ -27,6 +27,47 @@ function height(_) {
   return this;
 }
 
+function layer_merge() {
+  var chart = this.chart();
+
+  if (chart._projection) {
+    chart._projection
+         .scale(chart._scale)
+         .rotate(chart._rotation)
+         .precision(chart._precision)
+         .translate(chart._translate);
+  }
+
+  chart._path.projection(chart._projection)
+       .pointRadius(chart._pointRadius);
+
+  return this.attr("d", chart._path);
+}
+
+function layer_exit() {
+  var chart = this.chart();
+
+  return this.remove();
+}
+
+function zoomToFeature(d) {
+ var b = this._path.bounds(d),
+   s = .9 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this._h),
+   t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this._h - s * (b[1][1] + b[0][1])) / 2];
+
+ chart.base
+    .transition()
+      .duration(750)
+      .attr("transform", "translate(" + t + ")scale(" + s + ")");
+}
+
+function resetAffine() {
+ chart.base
+    .transition()
+      .duration(750)
+      .attr("transform", "");
+}
+
 function initialize(options) {
   var chart = this;
 
@@ -46,30 +87,6 @@ function initialize(options) {
                             .append("g")
                             .attr("class", "layer-graticule")
                             .append("path");
-
-  function merge() {
-    var chart = this.chart();
-
-    if (chart._projection) {
-      chart._projection
-           .scale(chart._scale)
-           .rotate(chart._rotation)
-           .precision(chart._precision)
-           .translate(chart._translate);
-    }
-
-    chart._path.projection(chart._projection)
-         .pointRadius(chart._pointRadius);
-
-    return this.attr("d", chart._path);
-  }
-
-  function exit() {
-    var chart = this.chart();
-
-    return this.remove();
-  }
-
 
   if(options.dispatch) {
     chart.dispatch = options.dispatch;
@@ -117,8 +134,8 @@ function initialize(options) {
           return selection;
         },
         events: layer.events || {
-          "merge": merge,
-          "exit": exit
+          "merge": layer_merge,
+          "exit": layer_exit
         }
     }
 
@@ -127,24 +144,10 @@ function initialize(options) {
   });
 
   // translate and scale SVG, don't change projection
-  chart.zoomToFeature = function(d) {
-   var b = this._path.bounds(d),
-     s = .9 / Math.max((b[1][0] - b[0][0]) / this._w, (b[1][1] - b[0][1]) / this._h),
-     t = [(this._w - s * (b[1][0] + b[0][0])) / 2, (this._h - s * (b[1][1] + b[0][1])) / 2];
-
-   chart.base
-      .transition()
-        .duration(750)
-        .attr("transform", "translate(" + t + ")scale(" + s + ")");
-  }
+  chart.zoomToFeature = zoomToFeature;
 
   // zero the base transform and scale
-  chart.resetAffine = function() {
-   chart.base
-      .transition()
-        .duration(750)
-        .attr("transform", "");
-  }
+  chart.resetAffine = resetAffine;
 
   chart.on("change:projection", function() {
 
@@ -293,27 +296,29 @@ function zoomToLayer(_) {
   return this;
 }
 
-!function() {
-  var configuration = {};
+var configuration = {};
 
-  // required by d3.chart specification
-  configuration.initialize = initialize;
+// required by d3.chart specification
+configuration.initialize = initialize;
 
-  // optional data transform "hook" method to transform incoming data
-  configuration.transform = transform;
+// optional data transform "hook" method to transform incoming data
+configuration.transform = transform;
 
-  // accessors and mutators
-  configuration.width = width;
-  configuration.height = height;
-  configuration.projection = projection;
-  configuration.rotate = rotate;
-  configuration.graticule = graticule;
-  configuration.scale = scale;
-  configuration.translate = translate;
-  configuration.center = center;
-  configuration.precision = precision;
-  configuration.pointRadius = pointRadius;
-  configuration.zoomToLayer = zoomToLayer;
+// accessors and mutators
+configuration.width = width;
+configuration.height = height;
+configuration.projection = projection;
+configuration.rotate = rotate;
+configuration.graticule = graticule;
+configuration.scale = scale;
+configuration.translate = translate;
+configuration.center = center;
+configuration.precision = precision;
+configuration.pointRadius = pointRadius;
+configuration.zoomToLayer = zoomToLayer;
 
+var index = function() {
   d3.chart("atlas", configuration);
-}();
+}
+
+exports['default'] = index;
