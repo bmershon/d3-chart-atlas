@@ -20,7 +20,7 @@
   "main": "atlas",
   "scripts": {
     "prestart": "esperanto -i index.js -b -s -t cjs > atlas.js",
-    "start": "browserify atlas_required.js -o ./dist/atlas.js"
+    "start": "browserify atlas_required.js -o atlas.v1.js"
   },
   "devDependencies": {
     "esperanto": "0.7.4"
