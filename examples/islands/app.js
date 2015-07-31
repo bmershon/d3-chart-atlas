@@ -3,17 +3,6 @@
   var width = 960,
       height = 500;
 
-  var λ = d3.scale.linear()
-      .domain([0, width])
-      .range([-180, 180]);
-
-  var φ = d3.scale.linear()
-      .domain([0, height])
-      .range([90, -90]);
-
-  var time0 = Date.now(),
-      time1;
-
   var timer = d3.select("#timer span");
 
   var data;
@@ -54,17 +43,6 @@
     data = topology;
     m.draw(data)
      .zoomToLayer("countries");
-
-    svg.on("mousemove", function() {
-      var p = d3.mouse(this);
-      time0 = Date.now();
-
-      m.rotate([λ(p[0]), φ(p[1])]);
-
-      time1 = Date.now();
-      timer.text((time1 - time0));
-    });
-
   }
 
 })();
