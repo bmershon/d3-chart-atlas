@@ -1,0 +1,28 @@
+{
+  "name": "d3.chart.atlas",
+  "version": "0.2.1",
+  "description": "A d3.chart for managing map projections.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bmershon/d3-chart-atlas.git"
+  },
+  "keywords": [
+    "d3.js",
+    "visualization",
+    "cartography",
+    "map",
+    "projection",
+    "svg"
+  ],
+  "author": {
+    "name": "Brooks Mershon"
+  },
+  "main": "atlas",
+  "scripts": {
+    "compile": "esperanto -i index.js -b -s -t cjs > atlas.js"
+  },
+  "devDependencies": {
+    "esperanto": "0.7.4"
+  },
+  "license": "MIT"
+}
