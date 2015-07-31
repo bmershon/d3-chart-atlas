@@ -1,23 +1,71 @@
 # d3-chart-atlas
 
-## topojson --> layers
+## Building from Source
 
-You give atlas topojson like this:
-
+Build `atlas.js`, which defines d3-chart-atlas.
 ```
-objects: [
-          countries: Object
-          land: Object
-          ne_10m_rivers_lake_centerlines: Object
-         ]
+npm install
+npm run-script compile
 ```
 
-*You tell Atlas what layers. Atlas render layers.*
+## Using
 
-*You configure map instance. Atlas do what you want. You no say how, Atlas do something reasonable.*
+See [d3.chart][d3.chart] to get started using Miso Project's framework for creating reusable charts.
 
-**You give bad directions, Atlas do bad things.**
+After **d3.chart.js** has been included (in a script tag, for example), d3 selections have a `chart("mychart", options)` method exposed.
 
+You can use `d3.chart` to create a map instance after **atlas.js** has been included after **d3.chart.js** is available. Suppose you had another chart definition file **barchart.js**. Then `chart("FancyBarChart", options)` could be used to create a FancyBarChart as it is defined in 'barchart.js'.
+
+```html
+...
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+...
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+<script src="https://cdn.rawgit.com/bmershon/d3-chart-atlas/v1.0/d3.chart.js"></script>
+<script src="https://cdn.rawgit.com/bmershon/d3-chart-atlas/v1.0/atlas.js"></script>
+<script src="app.js"></script>
+```
+
+In your main visualization code, you can instantiate a map instance like this...
+
+```js
+var svg = d3.select("#map")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+var options = {};
+options.layers = [];
+
+options.layers.push({
+  class: function(d, i) {return "country " + d.properties.continent.replace(/\s+/g, '') + " " + d.properties.admin.replace(/\s+/g, '')},
+  object: "countries",
+  id: function(d, i) {return d.properties.admin.replace(/\s+/g, '');}
+});
+
+options.layers.push({
+  class: function(d, i) {return "test " + d.properties.country},
+  object: "nuclear",
+  id: function(d, i) {return "test-" + d.properties.year},
+  filter: function(d, i) {return d.properties.year <= 2005}
+});
+
+// optional projection, orthographic is the default
+var m = svg.chart("atlas", options)
+           .graticule(d3.geo.graticule().step([20, 20]))
+           .projection(d3.geo.orthographic().clipAngle(90 + 10e-6))
+           .pointRadius(4);
+```
+
+...and then when you have loaded `data`, a [topojson][topojson] object...
+
+```js
+m.draw(data)
+ .zoomToLayer("countries");
+```
+[Click to see the live example][orthographic-example]
+![Orthographic Projection Screenshot](./img/orthographic.png)
 
 ## Background
 
@@ -42,3 +90,7 @@ In addition, d3-chart-atlas solves the most common problems users seem to encoun
 [d3.selection]: https://github.com/mbostock/d3/wiki/Selections
 
 [d3.chart]: http://misoproject.com/d3-chart/
+
+[topojson]: https://github.com/mbostock/topojson/wiki
+
+[orthographic-example]: http://bl.ocks.org/bmershon/ccf463d4cb5ee6a10a3f
