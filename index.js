@@ -35,7 +35,6 @@ configuration.precision = precision;
 configuration.pointRadius = pointRadius;
 configuration.zoomToLayer = zoomToLayer;
 
-(function atlas() {
-  var definition = d3.chart("atlas", configuration);
-  return definition;
-})();
+export default function(){
+  d3.chart("atlas", configuration);
+}
