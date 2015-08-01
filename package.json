@@ -1,6 +1,6 @@
 {
   "name": "d3.chart.atlas",
-  "version": "0.2.1",
+  "version": "0.1.0",
   "description": "A d3.chart for managing map projections.",
   "repository": {
     "type": "git",
@@ -19,11 +19,12 @@
   },
   "main": "atlas",
   "scripts": {
-    "prestart": "esperanto -i index.js -b -s -t cjs > atlas.js",
-    "start": "browserify atlas_required.js -o atlas.v1.js"
+    "bundle": "esperanto -i index.js -b -s -t umd --name atlas > atlas.js",
+    "minify": "uglifyjs atlas.js > atlas.min.js"
   },
   "devDependencies": {
-    "esperanto": "0.7.4"
+    "esperanto": "0.7.4",
+    "uglify-js": "2.4.16"
   },
   "license": "MIT"
 }

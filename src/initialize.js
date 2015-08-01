@@ -59,7 +59,7 @@ function initialize(options) {
                               .attr("id", layer.id || function(d, i) {return i});
 
           if(layer.interactions) {
-            for(e in layer.interactions) {
+            for(var e in layer.interactions) {
               if(layer.interactions.hasOwnProperty(e)){
                 selection.on(e, layer.interactions[e]);
               }
