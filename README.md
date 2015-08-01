@@ -4,9 +4,11 @@
 
 Build `atlas.js`, which defines d3-chart-atlas.
 ```
-npm install
-npm run-script compile
+npm run bundle
+npm run minify
 ```
+
+This compiles the ES6 modules into a self-executing script (`atlas.js`) and then minifies that script (`atlas.min.js`).
 
 ## Using
 
