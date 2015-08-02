@@ -4,7 +4,7 @@
 
 Build `atlas.js`, which defines d3-chart-atlas.
 
-To download the devlopment dependencies:
+To download the development dependencies:
 ```
 npm install
 ```
