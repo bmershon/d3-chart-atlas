@@ -4,6 +4,12 @@
 
 Build `atlas.js`, which defines d3-chart-atlas.
 
+**Note:** `atlas.js` is a self-executing script that defines a "map making" chart type for d3.chart.
+
+d3.chart currently [monkey patches][monkey-patch] itself onto a running instance of d3.
+
+That whole process is very likely to change, especially with the adoption of ES6.
+
 To download the development dependencies:
 ```
 npm install
@@ -93,6 +99,8 @@ The underlying components that d3.chart seeks to manage are called *layers*. A l
 
 In addition, d3-chart-atlas solves the most common problems users seem to encounter when it comes to scaling maps, zooming, and changing projections.
 
+
+[monkey-patch]:https://en.wikipedia.org/wiki/Monkey_patch
 
 [array-manipulation]: https://github.com/mbostock/d3/wiki/Arrays
 
