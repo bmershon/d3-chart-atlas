@@ -19,11 +19,11 @@
   },
   "main": "atlas",
   "scripts": {
-    "bundle": "esperanto -i index.js -b -s -t umd --name atlas > atlas.js",
+    "bundle": "d3-bundler --format=umd --name=atlas -- index.js > atlas.js",
     "minify": "uglifyjs atlas.js > atlas.min.js"
   },
   "devDependencies": {
-    "esperanto": "0.7.4",
+    "d3-bundler": "~0.2.5",
     "uglify-js": "2.4.16"
   },
   "license": "MIT"

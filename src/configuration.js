@@ -1,14 +1,14 @@
 import {center} from "./center";
 import {graticule} from "./graticule";
 import {height} from "./height";
-import {initialize} from "./chart_initialize";
+import {chart_initialize} from "./chart_initialize";
 import {path} from "./path";
 import {pointRadius} from "./pointRadius";
 import {precision} from "./precision";
 import {projection} from "./projection";
 import {rotate} from "./rotate";
 import {scale} from "./scale";
-import {transform} from "./chart_transform";
+import {chart_transform} from "./chart_transform";
 import {translate} from "./translate";
 import {width} from "./width";
 import {zoomToLayer} from "./zoomToLayer";
@@ -16,10 +16,10 @@ import {zoomToLayer} from "./zoomToLayer";
 var configuration = {};
 
 // required by d3.chart specification
-configuration.initialize = initialize;
+configuration.initialize = chart_initialize;
 
 // optional data transform "hook" method to transform incoming data
-configuration.transform = transform;
+configuration.transform = chart_transform;
 
 // accessors and mutators
 configuration.center = center;

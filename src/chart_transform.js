@@ -1,4 +1,4 @@
-function transform(data) {
+function chart_transform(data) {
 
   var chart = this;
 
@@ -25,4 +25,4 @@ function transform(data) {
   return t;
 }
 
-export {transform}
+export {chart_transform}

@@ -3,7 +3,7 @@ import {layer_exit} from "./layer_exit";
 import {zoomToFeature} from "./zoomToFeature";
 import {resetAffine} from "./resetAffine";
 
-function initialize(options) {
+function chart_initialize(options) {
   var chart = this;
 
   chart.base = chart.base.append("g").attr("class", "base");
@@ -109,4 +109,4 @@ function initialize(options) {
   });
 }
 
-export {initialize}
+export {chart_initialize}
