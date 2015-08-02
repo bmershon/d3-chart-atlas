@@ -3,6 +3,13 @@
 ## Building from Source
 
 Build `atlas.js`, which defines d3-chart-atlas.
+
+To download the devlopment dependencies:
+```
+npm install
+```
+Then type:
+
 ```
 npm run bundle
 npm run minify
