@@ -12,6 +12,7 @@ import {chart_transform} from "./chart_transform";
 import {translate} from "./translate";
 import {width} from "./width";
 import {zoomToLayer} from "./zoomToLayer";
+import {rotateToLayer} from "./rotateToLayer";
 
 var configuration = {};
 
@@ -34,5 +35,7 @@ configuration.precision = precision;
 configuration.pointRadius = pointRadius;
 configuration.width = width;
 configuration.zoomToLayer = zoomToLayer;
+configuration.rotateToLayer = rotateToLayer;
+
 
 export {configuration};

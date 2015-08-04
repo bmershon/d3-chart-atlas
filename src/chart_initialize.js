@@ -23,6 +23,11 @@ function chart_initialize(options) {
                             .attr("class", "layer-graticule")
                             .append("path");
 
+  var layerGraticule = chart.base
+                            .append("g")
+                            .attr("class", "layer-graticule")
+                            .append("path");
+
   if(options.dispatch) {
     chart.dispatch = options.dispatch;
 
