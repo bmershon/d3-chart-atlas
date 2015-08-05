@@ -123,7 +123,54 @@
             }
         }
 
+        if(layer.label) {
+          var labelBase = chart.base
+                               .append("g")
+                               .attr("class", "layer-labels-"+layer.object);
+          var labelConfig = {
+              dataBind: function(data) {
+                var chart = this.chart();
+
+                var toBind = (Array.isArray(data[layer.object]) ? data[layer.object] : [data[layer.object]]);
+
+                // prune labels according to given label filter
+                toBind = (layer.labelFilter) ? toBind.filter(layer.labelFilter) : toBind;
+
+                // prune labels that are clipped by the projection
+                toBind = toBind.filter(function(d) {
+                  var c = chart._path.centroid(d);
+                  return !(isNaN(c[0]) || isNaN(c[1]));
+                })
+
+                return this.selectAll("."+ "label-" + layer.object)
+                            .data(toBind);
+              },
+              insert: function() {
+                var chart = this.chart();
+                var selection = this.append("text")
+                                    .attr("class", layer.class)
+                                    .classed("label-" + layer.object, true)
+                                    .attr("id", layer.id || function(d, i) {return i});
+                return selection;
+              },
+              events: layer.events || {
+                "merge": function() {
+                  this.attr("transform", function(d) {return "translate(" + chart._path.centroid(d) + ")";})
+                      .text(layer.label);
+                  return this;
+                },
+                "exit": function() {
+                  this.remove();
+                  return this;
+                }
+              }
+          }
+
+          chart.layer(("layer-labels"+layer.object), labelBase, labelConfig);
+        }
+
         chart.layer(("layer-"+layer.object), layerBase, layerConfig);
+
 
       });
 
