@@ -64,25 +64,13 @@
 
       var layerGraticule = chart.base
                                 .append("g")
-                                .attr("class", "layer-graticule")
+                                .attr("class", "graticule")
                                 .append("path");
 
-      var layerGraticule = chart.base
+      var layerSphere =    chart.base
                                 .append("g")
-                                .attr("class", "layer-graticule")
+                                .attr("class", "sphere")
                                 .append("path");
-
-      if(options.dispatch) {
-        chart.dispatch = options.dispatch;
-
-        chart.dispatch.on("zoomToFeature", function(d, i) {
-          chart.zoomToFeature(d);
-        });
-
-        chart.dispatch.on("resetAffine", function(d, i) {
-          chart.resetAffine();
-        });
-      }
 
       chart.options.layers.forEach(function(layer) {
 
@@ -148,15 +136,14 @@
               insert: function() {
                 var chart = this.chart();
                 var selection = this.append("text")
-                                    .attr("class", layer.class)
-                                    .classed("label-" + layer.object, true)
-                                    .attr("id", layer.id || function(d, i) {return i});
+                                    .classed("label-" + layer.object, true);
+
                 return selection;
               },
               events: layer.events || {
-                "merge": function() {
+                "update": function() {
                   this.attr("transform", function(d) {return "translate(" + chart._path.centroid(d) + ")";})
-                      .text(layer.label);
+                    .text(layer.label);
                   return this;
                 },
                 "exit": function() {
@@ -195,6 +182,11 @@
                   .datum(chart._graticule)
                   .attr("d", chart._path)
                   .attr("class", "graticule");
+
+            layerSphere
+                  .datum({type: "Sphere"})
+                  .attr("d", chart._path)
+                  .attr("class", "sphere");
           }
 
           chart._path.projection(chart._projection)
