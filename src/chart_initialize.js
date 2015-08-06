@@ -1,38 +1,39 @@
 import {layer_merge} from "./layer_merge";
 import {layer_exit} from "./layer_exit";
-import {zoomToFeature} from "./zoomToFeature";
-import {resetAffine} from "./resetAffine";
 
 function chart_initialize(options) {
-  var chart = this;
 
-  chart.base = chart.base.append("g").attr("class", "base");
+  var depth = 0;
+  var chart = this;
   chart.options = options || {};
   chart._w = chart.base.attr("width") || 960;
   chart._h = chart.base.attr("height") || 500;
+  chart.base = chart.base.append("g").attr("class", "base");
   chart._projection = d3.geo.orthographic().clipAngle(90);
   chart._path = d3.geo.path();
-  chart._graticule = d3.geo.graticule();
+  chart._graticule = null;
+  chart._sphere = null;
   chart._precision = Math.sqrt(2);
   chart._scale = 1;
   chart._translate = [0, 0];
   chart._rotation = [0,0,0];
+
+  var layerSphere = chart.base
+                         .append("g")
+                         .attr("class", "sphere")
+                         .append("path");
+
 
   var layerGraticule = chart.base
                             .append("g")
                             .attr("class", "graticule")
                             .append("path");
 
-  var layerSphere =    chart.base
-                            .append("g")
-                            .attr("class", "sphere")
-                            .append("path");
-
   chart.options.layers.forEach(function(layer) {
 
     var layerBase = chart.base
                          .append("g")
-                         .attr("class", "layer-base-"+layer.object);
+                         .attr("class", "layer-base-"+layer.object + "-" + depth);
 
     var layerConfig = {
         dataBind: layer.databind || function(data) {
@@ -47,7 +48,7 @@ function chart_initialize(options) {
         insert: layer.insert || function() {
           var chart = this.chart();
           var selection = this.append("path")
-                              .attr("class", layer.class || layer.object)
+                              .attr("class", layer.class || "")
                               .classed(layer.object, true)
                               .attr("id", layer.id || function(d, i) {return i});
 
@@ -67,61 +68,59 @@ function chart_initialize(options) {
         }
     }
 
-    if(layer.label) {
-      var labelBase = chart.base
-                           .append("g")
-                           .attr("class", "layer-labels-"+layer.object);
-      var labelConfig = {
-          dataBind: function(data) {
-            var chart = this.chart();
-
-            var toBind = (Array.isArray(data[layer.object]) ? data[layer.object] : [data[layer.object]]);
-
-            // prune labels according to given label filter
-            toBind = (layer.labelFilter) ? toBind.filter(layer.labelFilter) : toBind;
-
-            // prune labels that are clipped by the projection
-            toBind = toBind.filter(function(d) {
-              var c = chart._path.centroid(d);
-              return !(isNaN(c[0]) || isNaN(c[1]));
-            })
-
-            return this.selectAll("."+ "label-" + layer.object)
-                        .data(toBind);
-          },
-          insert: function() {
-            var chart = this.chart();
-            var selection = this.append("text")
-                                .classed("label-" + layer.object, true);
-
-            return selection;
-          },
-          events: layer.events || {
-            "update": function() {
-              this.attr("transform", function(d) {return "translate(" + chart._path.centroid(d) + ")";})
-                .text(layer.label);
-              return this;
-            },
-            "exit": function() {
-              this.remove();
-              return this;
-            }
-          }
-      }
-
-      chart.layer(("layer-labels"+layer.object), labelBase, labelConfig);
-    }
-
-    chart.layer(("layer-"+layer.object), layerBase, layerConfig);
-
+    chart.layer(("layer-"+layer.object + "-" + depth), layerBase, layerConfig);
+    depth++;
 
   });
 
-  // translate and scale SVG, don't change projection
-  chart.zoomToFeature = zoomToFeature;
+  chart.options.labels.forEach(function(layer) {
+    var labelBase = chart.base
+                         .append("g")
+                         .attr("class", "layer-labels-"+layer.object + "-" + depth);
+    var labelConfig = {
+        dataBind: function(data) {
+          var chart = this.chart();
 
-  // zero the base transform and scale
-  chart.resetAffine = resetAffine;
+          var toBind = (Array.isArray(data[layer.object]) ? data[layer.object] : [data[layer.object]]);
+
+          // prune labels according to given label filter
+          toBind = (layer.filter) ? toBind.filter(layer.filter) : toBind;
+
+          // prune labels that are clipped by the projection
+          toBind = toBind.filter(function(d) {
+            var c = chart._path.centroid(d);
+            return !(isNaN(c[0]) || isNaN(c[1]));
+          })
+
+          return this.selectAll("."+ "label-" + layer.object)
+                      .data(toBind);
+        },
+        insert: function() {
+          var chart = this.chart();
+          var selection = this.append("text")
+                              .attr("class", layer.class || "")
+                              .classed("label-" + layer.object, true);
+          return selection;
+        },
+        events: layer.events || {
+          "update": function() {
+            this.attr("transform", function(d) {return "translate(" + chart._path.centroid(d) + ")";})
+                .attr("id", layer.id || "")
+                .text(layer.text);
+            return this;
+          },
+          "exit": function() {
+            this.remove();
+            return this;
+          }
+        }
+    }
+
+    chart.layer(("labels-" + layer.object + "-" + depth), labelBase, labelConfig);
+    depth++;
+
+  });
+
 
   chart.on("change:projection", function() {
 
@@ -140,7 +139,7 @@ function chart_initialize(options) {
               .attr("class", "graticule");
 
         layerSphere
-              .datum({type: "Sphere"})
+              .datum(chart._sphere)
               .attr("d", chart._path)
               .attr("class", "sphere");
       }
