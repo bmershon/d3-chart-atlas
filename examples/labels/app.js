@@ -1,11 +1,17 @@
 (function() {
-  var width = 960,
+  var width = 1200,
       height = width * 500/960;
+
+
+  var time0 = Date.now(),
+      time1;
+
+  var timer = d3.select("#timer span");
 
   var smallFontScale = d3.scale.linear().domain([height/2, 0]).range([8, 18]);
   var bigFontScale = d3.scale.linear().domain([height/2, 0]).range([8, 22]);
   var opacityScale = d3.scale.linear().domain([.8*height/2, 0]).range([0, 1]);
-  var tightOpacityScale = d3.scale.linear().domain([.6*height/2, 0]).range([0, 1]);
+  var tightOpacityScale = d3.scale.linear().domain([.6*height/2, 0]).range([0, .6]);
 
   var center = [165, 0];
 
@@ -89,6 +95,7 @@
              .height(height)
              .rotate(center)
              .sphere({type: "Sphere"})
+             .precision(.3)
              .graticule(d3.geo.graticule().step([20, 20]))
              .projection(d3.geo.orthographic().clipAngle(90))
              .pointRadius(function(d) {
@@ -115,7 +122,7 @@
           var c = path.centroid(d);
           var dx = width/2 - c[0];
           var dy = height/2 - c[1];
-          return opacityScale(Math.sqrt(dx * dx + dy * dy));
+          return tightOpacityScale(Math.sqrt(dx * dx + dy * dy));
         })
         .style("font-size", function(d) {
           var c = path.centroid(d);
@@ -129,9 +136,8 @@
           var c = path.centroid(d);
           var dx = width/2 - c[0];
           var dy = height/2 - c[1];
-          return tightOpacityScale(Math.sqrt(dx * dx + dy * dy));
+          return opacityScale(Math.sqrt(dx * dx + dy * dy));
         })
-
     svg.selectAll(".blurb")
         .attr("x", 30)
         .attr("y", 60)
@@ -139,7 +145,7 @@
           var c = path.centroid(d);
           var dx = width/2 - c[0];
           var dy = height/2 - c[1];
-          return tightOpacityScale(Math.sqrt(dx * dx + dy * dy));
+          return opacityScale(Math.sqrt(dx * dx + dy * dy));
         })
         .style("font-size", function(d) {
           var c = path.centroid(d);
@@ -160,7 +166,10 @@
 
     svg.on("mousemove", function() {
       var p = d3.mouse(this);
+      time0 = Date.now();
       globe.rotate([(λ(p[0]) + center[0] % 360), (φ(p[1]) + center[1] % 90)]);
+      time1 = Date.now();
+      timer.text((time1 - time0));
     });
   }
 
