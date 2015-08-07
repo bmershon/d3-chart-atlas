@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+  body {
+    background-color: #fcfcfc;
+  }
+
+  .globe {
+    width: 100%;
+    display: inline;
+    padding: 20px;
+  }
+
+  .graticule {
+    stroke: #885309;
+    fill :none;
+    stroke-width: 0.5px;
+    stroke-dasharray: 2, 2;
+  }
+
+  .country {
+    fill: #5e4512;
+    stroke-width: .5px;
+    fill-opacity: .4;
+    stroke: #aaa;
+  }
+  .country.active{
+    stroke-width: 2px;
+  }
+
+  .country.China {
+    fill: #CF912A;
+    fill-opacity: .3;
+  }
+
+  .country.UnitedStatesofAmerica {
+    fill: #0052A5;
+    fill-opacity: .6;
+  }
+
+  .country.France {
+    fill: #bb13c9;
+    fill-opacity: .6;
+  }
+
+  .country.Pakistan {
+    fill: #01411C;
+    fill-opacity: .6;
+  }
+
+  .country.Russia {
+    fill: #ed3826;
+    fill-opacity: .6;
+  }
+
+  .country.India {
+    fill: #FF9933;
+    fill-opacity: .6;
+  }
+
+  .country.UnitedKingdom {
+    fill: #000;
+    fill-opacity: .6;
+  }
+
+  .test {
+    fill-opacity: 1;
+    stroke: none;
+    stroke-width: .5px;
+  }
+
+  .test.China {
+    fill: #AA381E;
+  }
+
+  .test.US {
+    fill: #0052A5;
+  }
+
+  .test.France {
+    fill: #bb13c9;
+  }
+
+  .test.Pakistan {
+    fill: #04700c;
+  }
+
+  .test.USSR {
+    fill: #ed3826;
+  }
+
+  .test.India {
+    fill: #be6f13;
+  }
+
+  .test.UK {
+    fill: #000;
+  }
+
+</style>
+
+<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-pink.min.css">
+<script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<body>
+  <div id="US" class="globe"></div>
+  <div id="USSR" class="globe"></div>
+</body>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+<script src="../../d3.chart.js"></script>
+<script src="../../atlas.js"></script>
+<script src="app.js"></script>
