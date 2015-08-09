@@ -140,41 +140,35 @@
     if(!chart.data) return;
 
     svg.selectAll(".label-countries")
-        .style("fill-opacity", function(d) {
+        .each(function(d) {
           var c = path.centroid(d);
           var dx = width/2 - c[0];
           var dy = height/2 - c[1];
-          return tightOpacityScale(Math.sqrt(dx * dx + dy * dy));
+          d.distance = Math.sqrt(dx * dx + dy * dy);
         })
-        .style("font-size", function(d) {
-          var c = path.centroid(d);
-          var dx = width/2 - c[0];
-          var dy = height/2 - c[1];
-          return smallFontScale(Math.sqrt(dx * dx + dy * dy));
-        })
+        .style("fill-opacity", function(d) {return tightOpacityScale(d.distance)})
+        .style("font-size", function(d) {return smallFontScale(d.distance)})
 
     svg.selectAll(".event")
-        .style("stroke-opacity", function(d) {
+        .each(function(d) {
           var c = path.centroid(d);
           var dx = width/2 - c[0];
           var dy = height/2 - c[1];
-          return opacityScale(Math.sqrt(dx * dx + dy * dy));
+          d.distance = Math.sqrt(dx * dx + dy * dy);
         })
+        .style("stroke-opacity", function(d) {return opacityScale(d.distance)})
+
     svg.selectAll(".blurb")
         .attr("x", 30)
         .attr("y", 60)
-        .style("fill-opacity", function(d) {
+        .each(function(d) {
           var c = path.centroid(d);
           var dx = width/2 - c[0];
           var dy = height/2 - c[1];
-          return opacityScale(Math.sqrt(dx * dx + dy * dy));
+          d.distance = Math.sqrt(dx * dx + dy * dy);
         })
-        .style("font-size", function(d) {
-          var c = path.centroid(d);
-          var dx = width/2 - c[0];
-          var dy = height/2 - c[1];
-          return bigFontScale(Math.sqrt(dx * dx + dy * dy));
-        })
+        .style("opacity", function(d) {return opacityScale(d.distance)})
+        .style("font-size", function(d) {return bigFontScale(d.distance)})
   })
 
   queue()
@@ -256,10 +250,7 @@
     hexagons.enter().append("path")
 
     hexagons.attr("d", function(d) { return hexbin.hexagon(radius(d.length)); })
-        .classed("hexagon", true)
-        .attr("id", function(d) {return d.properties.country})
-        .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
-        .style("fill-opacity", function(d) {
+        .each(function(d) {
           var test = {
                 "type": "Point",
                 "coordinates": [d.x, d.y] // spherical coordinates
@@ -267,8 +258,13 @@
           var c = path.centroid(test);
           var dx = width/2 - c[0];
           var dy = height/2 - c[1];
-          return hexagonOpacity(Math.sqrt(dx * dx + dy * dy));
+          d.distance = Math.sqrt(dx * dx + dy * dy);
         })
+        .classed("hexagon", true)
+        .attr("id", function(d) {return d.properties.country})
+        .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
+        .style("fill-opacity", function(d) {return hexagonOpacity(d.distance)})
+        .style("stroke-opacity", function(d) {return hexagonOpacity(d.distance)})
 
     hexagons.exit().remove();
   }
