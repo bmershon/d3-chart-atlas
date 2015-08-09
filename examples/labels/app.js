@@ -25,7 +25,7 @@
 
   var hexbin = d3.hexbin()
       .size([width, height])
-      .radius(6); //spherical coordinates, degrees
+      .radius(2); //spherical coordinates, degrees
 
   var λ = d3.scale.linear()
       .domain([0, outerWidth])
@@ -46,7 +46,10 @@
 
   var svg = background.append("g")
                       .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")")
-                      .attr("id", "globe")
+                      .attr("id", "globe");
+
+  var g_hexagons;
+
   var powers = {
     "FRA": "France",
     "CHN": "China",
@@ -82,6 +85,11 @@
     class: "country",
     text: function(d) {return powers[d.properties["adm0_a3"]]},
     filter: function(d) {return powers.hasOwnProperty(d.properties["adm0_a3"])}
+  });
+
+  // locators for important events
+  options.layers.push({
+    object: "hexagons"
   });
 
   // locators for important events
@@ -190,19 +198,19 @@
     var projection = globe.projection();
     var path = globe.path();
 
-    bins = hexbin(locations).sort(function(a, b) { return b.length - a.length; });
+    bins = hexbin(locations).sort(function(a, b) { return b.length - a.length;});
 
     // find dominate country in bin and use that for color coding
     bins.map(function(d) {
       var length = d.length;
       for(var i = 0; i < length; i++) {
         var country = d[i].properties.country;
-
       }
       d.properties = {};
       d.properties.country = country;
     })
 
+    g_hexagons = d3.select(".layer-base-hexagons-2");
     updateHexagons(projection, path);
 
     background.on("mousemove", function() {
@@ -239,8 +247,10 @@
           .style("fill", "url(#globe_shading)");
   }
 
+
+  // ENTER, UPDATE, EXIT for hexagons (bins generated from hexbining of nuclear tests)
   function updateHexagons(projection, path) {
-    var hexagons = svg.selectAll(".hexagon")
+    var hexagons = g_hexagons.selectAll(".hexagon")
                       .data(bins.filter(function(d) {return visible(d, path)}))
 
     hexagons.enter().append("path")

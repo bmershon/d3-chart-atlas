@@ -8,6 +8,11 @@ function chart_transform(data) {
   var t = {};
 
   this.options.layers.forEach(function(layer) {
+
+    if(!data.objects.hasOwnProperty(layer.object)) {
+      return [];
+    }
+
     if(data.objects[layer.object].type == "GeometryCollection") {
       t[layer.object] = topojson.feature(data, data.objects[layer.object]).features;
     }
