@@ -1,6 +1,6 @@
 (function() {
   var margin = {top: 20, right: 20, bottom: 20, left: 20},
-      padding = {top: 60, right: 60, bottom: 60, left: 60},
+      padding = {top: 0, right: 60, bottom: 120, left: 60},
       outerWidth = 1200,
       outerHeight = 750,
       innerWidth = outerWidth - margin.left - margin.right,
@@ -13,7 +13,15 @@
   var opacityScale = d3.scale.linear().domain([.8*height/2, 0]).range([0, 1]);
   var tightOpacityScale = d3.scale.linear().domain([.6*height/2, 0]).range([0, .6]);
 
+  var radius = d3.scale.sqrt()
+    .domain([0, 900])
+    .range([5, 12]);
+
   var center = [165, 0];
+
+  var hexbin = d3.hexbin()
+      .size([width, height])
+      .radius(4); //spherical coordinates, degrees
 
   var λ = d3.scale.linear()
       .domain([0, outerWidth])
@@ -30,11 +38,11 @@
 
   var data;
 
-  var background = d3.select("#globe");
+  var background = d3.select("#nuclear-testing");
 
   var svg = background.append("g")
-                      .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")");
-
+                      .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")")
+                      .attr("id", "globe")
   var powers = {
     "FRA": "France",
     "CHN": "China",
@@ -122,6 +130,7 @@
   globe.on("change:projection", function() {
     var chart = this;
     var path = chart._path;
+    var projection = chart._projection;
     svg.selectAll(".label-countries")
         .style("fill-opacity", function(d) {
           var c = path.centroid(d);
@@ -158,6 +167,13 @@
           var dy = height/2 - c[1];
           return bigFontScale(Math.sqrt(dx * dx + dy * dy));
         })
+
+
+    svg.selectAll(".hexagon")
+        .attr("d", function(d) { return hexbin.hexagon(radius(d.length)); })
+        .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
+
+
   })
 
   queue()
@@ -166,23 +182,46 @@
 
 
   function ready(error, topology) {
+    console.debug(topology)
     data = topology;
+
+    var locations = topojson.feature(topology, topology.objects.nuclear).features;
+    locations.forEach(function(d) {
+      p = d.geometry.coordinates;
+      d[0] = p[0], d[1] = p[1];
+    });
+
     globe.draw(data)
      .rotateToLayer("land");
+
+    var projection = globe.projection();
+
+    var bins = hexbin(locations).sort(function(a, b) { return b.length - a.length; });
+
+    var projectedBins = bins.map(function(d) {
+      return projection([d.x, d.y]);
+    })
+    console.debug(projectedBins)
+
+    svg.selectAll("hexagon")
+        .data(hexbin(locations).sort(function(a, b) { return b.length - a.length; }))
+      .enter().append("path")
+        .attr("class", "hexagon")
+        .attr("d", function(d) { return hexbin.hexagon(radius(d.length)); })
+        .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
 
     background.on("mousemove", function() {
       var p = d3.mouse(this);
       time0 = Date.now();
-
       globe.rotate([(λ(p[0]) + center[0] % 360), (φ(p[1]) + center[1] % 90)]);
-
       time1 = Date.now();
       timer.text((1000/(time1 - time0)).toPrecision(2));
     });
 
+
     // <defs> defined in index.html
     ellipse
-          .attr("cx", width * .45).attr("cy", outerHeight*.95)
+          .attr("cx", width * .45 + margin.left + padding.left).attr("cy", outerHeight - globe.scale()*.20*2 - 10)
           .attr("rx", globe.scale()*.7)
           .attr("ry", globe.scale()*.20)
           .attr("class", "noclicks")
