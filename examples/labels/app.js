@@ -1,3 +1,4 @@
+"use strict";
 (function() {
   var margin = {top: 20, right: 20, bottom: 20, left: 20},
       padding = {top: 0, right: 60, bottom: 120, left: 60},
@@ -12,16 +13,19 @@
   var bigFontScale = d3.scale.linear().domain([height/2, 0]).range([8, 22]);
   var opacityScale = d3.scale.linear().domain([.8*height/2, 0]).range([0, 1]);
   var tightOpacityScale = d3.scale.linear().domain([.6*height/2, 0]).range([0, .6]);
+  var hexagonOpacity = d3.scale.linear().domain([.85*height/2, 0]).range([0, 1]);
 
   var radius = d3.scale.sqrt()
     .domain([0, 900])
-    .range([5, 12]);
+    .range([7, 25]);
 
   var center = [165, 0];
 
+  var bins;
+
   var hexbin = d3.hexbin()
       .size([width, height])
-      .radius(4); //spherical coordinates, degrees
+      .radius(6); //spherical coordinates, degrees
 
   var λ = d3.scale.linear()
       .domain([0, outerWidth])
@@ -70,13 +74,6 @@
     object: "countries",
     filter: function(d) {return powers.hasOwnProperty(d.properties["adm0_a3"])},
   });
-
-  // // nuclear tests
-  // options.layers.push({
-  //   class: "test",
-  //   id: function(d) {return d.properties.country},
-  //   object: "nuclear"
-  // });
 
   // country labels
   options.labels.push({
@@ -131,6 +128,9 @@
     var chart = this;
     var path = chart._path;
     var projection = chart._projection;
+
+    if(!chart.data) return;
+
     svg.selectAll(".label-countries")
         .style("fill-opacity", function(d) {
           var c = path.centroid(d);
@@ -167,13 +167,6 @@
           var dy = height/2 - c[1];
           return bigFontScale(Math.sqrt(dx * dx + dy * dy));
         })
-
-
-    svg.selectAll(".hexagon")
-        .attr("d", function(d) { return hexbin.hexagon(radius(d.length)); })
-        .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
-
-
   })
 
   queue()
@@ -187,7 +180,7 @@
 
     var locations = topojson.feature(topology, topology.objects.nuclear).features;
     locations.forEach(function(d) {
-      p = d.geometry.coordinates;
+      var p = d.geometry.coordinates;
       d[0] = p[0], d[1] = p[1];
     });
 
@@ -195,31 +188,35 @@
      .rotateToLayer("land");
 
     var projection = globe.projection();
+    var path = globe.path();
 
-    var bins = hexbin(locations).sort(function(a, b) { return b.length - a.length; });
+    bins = hexbin(locations).sort(function(a, b) { return b.length - a.length; });
 
-    var projectedBins = bins.map(function(d) {
-      return projection([d.x, d.y]);
+    // find dominate country in bin and use that for color coding
+    bins.map(function(d) {
+      var length = d.length;
+      for(var i = 0; i < length; i++) {
+        var country = d[i].properties.country;
+
+      }
+      d.properties = {};
+      d.properties.country = country;
     })
-    console.debug(projectedBins)
 
-    svg.selectAll("hexagon")
-        .data(hexbin(locations).sort(function(a, b) { return b.length - a.length; }))
-      .enter().append("path")
-        .attr("class", "hexagon")
-        .attr("d", function(d) { return hexbin.hexagon(radius(d.length)); })
-        .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
+    updateHexagons(projection, path);
 
     background.on("mousemove", function() {
       var p = d3.mouse(this);
       time0 = Date.now();
       globe.rotate([(λ(p[0]) + center[0] % 360), (φ(p[1]) + center[1] % 90)]);
+      updateHexagons(projection, path);
       time1 = Date.now();
       timer.text((1000/(time1 - time0)).toPrecision(2));
     });
 
-
     // <defs> defined in index.html
+
+    // DROP SHADOW
     ellipse
           .attr("cx", width * .45 + margin.left + padding.left).attr("cy", outerHeight - globe.scale()*.20*2 - 10)
           .attr("rx", globe.scale()*.7)
@@ -227,17 +224,53 @@
           .attr("class", "noclicks")
           .style("fill", "url(#drop_shadow)");
 
+    // NORTH EAST HIGHLIGHT (from sun)
     svg.append("circle")
           .attr("cx", width / 2).attr("cy", height / 2)
           .attr("r", globe.scale())
           .attr("class","noclicks")
           .style("fill", "url(#globe_highlight)");
 
+    // SOUTH WEST SHADING
     svg.append("circle")
           .attr("cx", width / 2).attr("cy", height / 2)
           .attr("r", globe.scale())
           .attr("class","noclicks")
           .style("fill", "url(#globe_shading)");
+  }
+
+  function updateHexagons(projection, path) {
+    var hexagons = svg.selectAll(".hexagon")
+                      .data(bins.filter(function(d) {return visible(d, path)}))
+
+    hexagons.enter().append("path")
+
+    hexagons.attr("d", function(d) { return hexbin.hexagon(radius(d.length)); })
+        .classed("hexagon", true)
+        .attr("id", function(d) {return d.properties.country})
+        .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
+        .style("fill-opacity", function(d) {
+          var test = {
+                "type": "Point",
+                "coordinates": [d.x, d.y] // spherical coordinates
+              }
+          var c = path.centroid(test);
+          var dx = width/2 - c[0];
+          var dy = height/2 - c[1];
+          return hexagonOpacity(Math.sqrt(dx * dx + dy * dy));
+        })
+
+    hexagons.exit().remove();
+  }
+
+  // Run a point through the geometry pipeline to test for orthographic clipping
+  function visible(d, path) {
+    var test = {
+          "type": "Point",
+          "coordinates": [d.x, d.y] // spherical coordinates
+        }
+    var c = path.centroid(test);
+    return !(isNaN(c[0]) || isNaN(c[1]));
   }
 
 })();
