@@ -2,7 +2,7 @@
   var margin = {top: 20, right: 20, bottom: 20, left: 20},
       padding = {top: 60, right: 60, bottom: 60, left: 60},
       outerWidth = 1200,
-      outerHeight = 800,
+      outerHeight = 750,
       innerWidth = outerWidth - margin.left - margin.right,
       innerHeight = outerHeight - margin.top - margin.bottom,
       width = innerWidth - padding.left - padding.right,
@@ -23,14 +23,17 @@
       .domain([0, outerHeight])
       .range([90, -90]);
 
+  var time0 = Date.now(),
+      time1;
+
+  var timer = d3.select("#timer span");
+
   var data;
 
-  var background = d3.select("#map")
-                    .append("svg")
-                    .attr("width", outerWidth)
-                    .attr("height", outerHeight);
+  var background = d3.select("#globe");
 
-  var svg = background.append("g").attr("transform", "translate(" + (margin.left + padding.left)+ "," + (margin.top + padding.top) + ")");
+  var svg = background.append("g")
+                      .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")");
 
   var powers = {
     "FRA": "France",
@@ -60,12 +63,12 @@
     filter: function(d) {return powers.hasOwnProperty(d.properties["adm0_a3"])},
   });
 
-  // nuclear tests
-  options.layers.push({
-    class: "test",
-    id: function(d) {return d.properties.country},
-    object: "nuclear"
-  });
+  // // nuclear tests
+  // options.layers.push({
+  //   class: "test",
+  //   id: function(d) {return d.properties.country},
+  //   object: "nuclear"
+  // });
 
   // country labels
   options.labels.push({
@@ -75,7 +78,6 @@
     text: function(d) {return powers[d.properties["adm0_a3"]]},
     filter: function(d) {return powers.hasOwnProperty(d.properties["adm0_a3"])}
   });
-
 
   // locators for important events
   options.layers.push({
@@ -104,10 +106,9 @@
              .projection(d3.geo.orthographic().clipAngle(90))
              .pointRadius(function(d) {
                if(d.properties) {
-                 return (d.properties.blurb) ? 20 : 7;
+                 return (d.properties.blurb) ? 20 : 5;
                }
              })
-
   /*
     Define a callback to be called when "change:projection" events are triggered
     within the chart.
@@ -171,42 +172,15 @@
 
     background.on("mousemove", function() {
       var p = d3.mouse(this);
+      time0 = Date.now();
+
       globe.rotate([(λ(p[0]) + center[0] % 360), (φ(p[1]) + center[1] % 90)]);
+
+      time1 = Date.now();
+      timer.text((1000/(time1 - time0)).toPrecision(2));
     });
 
-    var globe_highlight = svg.append("defs").append("radialGradient")
-          .attr("id", "globe_highlight")
-          .attr("cx", "75%")
-          .attr("cy", "25%");
-        globe_highlight.append("stop")
-          .attr("offset", "5%").attr("stop-color", "#ffd")
-          .attr("stop-opacity","0.6");
-        globe_highlight.append("stop")
-          .attr("offset", "100%").attr("stop-color", "#ba9")
-          .attr("stop-opacity","0.2");
-
-    var globe_shading = svg.append("defs").append("radialGradient")
-          .attr("id", "globe_shading")
-          .attr("cx", "55%")
-          .attr("cy", "45%");
-        globe_shading.append("stop")
-          .attr("offset","30%").attr("stop-color", "#fff")
-          .attr("stop-opacity","0")
-        globe_shading.append("stop")
-          .attr("offset","100%").attr("stop-color", "#4a4a4a")
-          .attr("stop-opacity","0.4")
-
-    var drop_shadow = svg.append("defs").append("radialGradient")
-          .attr("id", "drop_shadow")
-          .attr("cx", "50%")
-          .attr("cy", "50%");
-        drop_shadow.append("stop")
-          .attr("offset","20%").attr("stop-color", "#000")
-          .attr("stop-opacity",".25")
-        drop_shadow.append("stop")
-          .attr("offset","100%").attr("stop-color", "#000")
-          .attr("stop-opacity","0")
-
+    // <defs> defined in index.html
     ellipse
           .attr("cx", width * .45).attr("cy", outerHeight*.95)
           .attr("rx", globe.scale()*.7)

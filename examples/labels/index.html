@@ -2,16 +2,19 @@
 <meta charset="utf-8">
 <style>
 
+  #fps {
+    position: absolute;
+    margin: 20px
+  }
+
   .noclicks {
     pointer-events:none;
   }
 
   svg {
-    background-color: #ebebeb;
     top: 0;
     position: absolute;
-    cursor: crosshair;
-    background-color: #ebebeb;
+    cursor: move;
   }
 
   .sphere {
@@ -37,9 +40,9 @@
 
   path.land {
     fill: #000F24;
-    stroke-width: 0.1px;
+    stroke-width: .2px;
     stroke: #000;
-    fill-opacity: .1;
+    fill-opacity: .2;
   }
 
   path#CHN {
@@ -80,6 +83,7 @@
 
   /* Blurbs about areas affected*/
   .blurb {
+    pointer-events: none;
     fill: #000F24;
     text-anchor: middle;
     font-style: italic;
@@ -88,6 +92,7 @@
 
   /* Dots to represent tests */
   .event {
+    pointer-events: none;
     fill: none;
     stroke: #000000;
     stroke-width: 2px;
@@ -144,7 +149,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <body>
   <div id="map">
-    <div id="timer">Delay: <span>?</span> ms</div>
+    <div id="timer">FPS: <span>?</span></div>
+    <svg width=1200 height=700 id="globe">
+      <defs><radialGradient id="globe_highlight" cx="75%" cy="25%"><stop offset="5%" stop-color="#ffd" stop-opacity="0.6"></stop><stop offset="100%" stop-color="#96897c" stop-opacity="0.2"></stop></radialGradient></defs>
+      <defs><radialGradient id="globe_shading" cx="55%" cy="45%"><stop offset="30%" stop-color="#fff" stop-opacity="0"></stop><stop offset="100%" stop-color="#4a4a4a" stop-opacity="0.4"></stop></radialGradient></defs>
+      <defs><radialGradient id="drop_shadow" cx="50%" cy="50%"><stop offset="20%" stop-color="#000" stop-opacity=".25"></stop><stop offset="100%" stop-color="#000" stop-opacity="0"></stop></radialGradient></defs>
+    </svg>
   </div>
 </body>
 <script src="http://d3js.org/queue.v1.min.js"></script>
