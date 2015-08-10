@@ -13,7 +13,7 @@
   var bigFontScale = d3.scale.linear().domain([height/2, 0]).range([8, 22]);
   var opacityScale = d3.scale.linear().domain([.8*height/2, 0]).range([0, 1]);
   var tightOpacityScale = d3.scale.linear().domain([.6*height/2, 0]).range([0, .6]);
-  var hexagonOpacity = d3.scale.linear().domain([.85*height/2, 0]).range([0, 1]);
+  var hexagonOpacity = d3.scale.linear().domain([.85*height/2, 0]).range([0, .8]);
 
   var radius = d3.scale.sqrt()
     .domain([0, 900])
@@ -87,7 +87,7 @@
     filter: function(d) {return powers.hasOwnProperty(d.properties["adm0_a3"])}
   });
 
-  // locators for important events
+  // placeholder layer, not tied to topojson object; used for drawing order
   options.layers.push({
     object: "hexagons"
   });
@@ -177,7 +177,6 @@
 
 
   function ready(error, topology) {
-    console.debug(topology)
     data = topology;
 
     var locations = topojson.feature(topology, topology.objects.nuclear).features;
@@ -193,7 +192,7 @@
     var path = globe.path();
 
     bins = hexbin(locations).sort(function(a, b) { return b.length - a.length;});
-    console.log(bins);
+    console.log(bins.map(function(d) {return d.length}).filter(function(d) {return d > 1}));
     // find dominate country in bin and use that for color coding
     bins.map(function(d) {
       var length = d.length;
