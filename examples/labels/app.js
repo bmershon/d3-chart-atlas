@@ -15,9 +15,7 @@
   var tightOpacityScale = d3.scale.linear().domain([.6*height/2, 0]).range([0, .6]);
   var hexagonOpacity = d3.scale.linear().domain([.85*height/2, 0]).range([0, .8]);
 
-  var radius = d3.scale.sqrt()
-    .domain([0, 900])
-    .range([2, 25]);
+  var radius;
 
   var center = [165, 0];
 
@@ -25,7 +23,7 @@
 
   var hexbin = d3.hexbin()
       .size([width, height])
-      .radius(1); //spherical coordinates, degrees
+      .radius(2); //spherical coordinates, degrees
 
   var λ = d3.scale.linear()
       .domain([0, outerWidth])
@@ -192,7 +190,14 @@
     var path = globe.path();
 
     bins = hexbin(locations).sort(function(a, b) { return b.length - a.length;});
-    console.log(bins.map(function(d) {return d.length}).filter(function(d) {return d > 1}));
+
+    var distribution = bins.map(function(d) {return d.length});
+    var extent = d3.extent(distribution);
+
+    radius = d3.scale.sqrt()
+      .domain(extent)
+      .range([4, 25]);
+
     // find dominate country in bin and use that for color coding
     bins.map(function(d) {
       var length = d.length;
