@@ -17,7 +17,7 @@
 
   var radius = d3.scale.sqrt()
     .domain([0, 900])
-    .range([7, 25]);
+    .range([2, 25]);
 
   var center = [165, 0];
 
@@ -25,7 +25,7 @@
 
   var hexbin = d3.hexbin()
       .size([width, height])
-      .radius(2); //spherical coordinates, degrees
+      .radius(1); //spherical coordinates, degrees
 
   var λ = d3.scale.linear()
       .domain([0, outerWidth])
@@ -193,7 +193,7 @@
     var path = globe.path();
 
     bins = hexbin(locations).sort(function(a, b) { return b.length - a.length;});
-
+    console.log(bins);
     // find dominate country in bin and use that for color coding
     bins.map(function(d) {
       var length = d.length;
