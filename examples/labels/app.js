@@ -1,9 +1,9 @@
 "use strict";
 (function() {
   var margin = {top: 20, right: 20, bottom: 20, left: 20},
-      padding = {top: 0, right: 60, bottom: 120, left: 60},
-      outerWidth = 1200,
-      outerHeight = 750,
+      padding = {top: 60, right: 60, bottom: 60, left: 60},
+      outerWidth = 960,
+      outerHeight = 960,
       innerWidth = outerWidth - margin.left - margin.right,
       innerHeight = outerHeight - margin.top - margin.bottom,
       width = innerWidth - padding.left - padding.right,
@@ -14,16 +14,9 @@
   var opacityScale = d3.scale.linear().domain([.8*height/2, 0]).range([0, 1]);
   var tightOpacityScale = d3.scale.linear().domain([.6*height/2, 0]).range([0, .6]);
   var hexagonOpacity = d3.scale.linear().domain([.85*height/2, 0]).range([0, .8]);
+  var hexagonStroke = d3.scale.sqrt().range([0, 8]);
 
-  var radius;
-
-  var center = [165, 0];
-
-  var bins;
-
-  var hexbin = d3.hexbin()
-      .size([width, height])
-      .radius(2); //spherical coordinates, degrees
+  var data;
 
   var λ = d3.scale.linear()
       .domain([0, outerWidth])
@@ -33,12 +26,15 @@
       .domain([0, outerHeight])
       .range([90, -90]);
 
-  var time0 = Date.now(),
-      time1;
+  var radius = d3.scale.linear()
+              .range([4, 25]);
 
-  var timer = d3.select("#timer span");
+  var center = [165, 0];
 
-  var data;
+  var bins;
+
+  var hexbin = d3.hexbin()
+      .radius(1); //spherical coordinates, degrees
 
   var background = d3.select("#nuclear-testing");
 
@@ -46,6 +42,8 @@
                       .attr("transform", "translate(" + (margin.left + padding.left) + "," + (margin.top + padding.top) + ")")
                       .attr("id", "globe");
 
+
+  // cache a layer added to the map
   var g_hexagons;
 
   var powers = {
@@ -56,6 +54,7 @@
     "USA": "United States",
     "RUS": "Russia",
     "GBR": "UK",
+    "PRK": "North Korea",
     "DZA": ""
   }
 
@@ -104,9 +103,12 @@
     text: function(d) {return d.properties.blurb}
   });
 
-  var ellipse = background.append("ellipse");
+
+  // add dropshadow ellipse, draw  before (behind) rest of globe
+  var ellipse = svg.append("ellipse");
 
   // d3.chart grafts itself onto and modifies the d3 selection.
+  // Sets up all of the layer groups before the data is bound
   var globe = svg.chart("atlas", options)
              .width(width)
              .height(height)
@@ -117,7 +119,7 @@
              .projection(d3.geo.orthographic().clipAngle(90))
              .pointRadius(function(d) {
                if(d.properties) {
-                 return (d.properties.blurb) ? 20 : 5;
+                 return (d.properties.blurb) ? 30 : 5;
                }
              })
   /*
@@ -170,10 +172,10 @@
   })
 
   queue()
-    .defer(d3.json, "combined.json")
-    .await(ready);
+      .defer(d3.json, "combined.json")
+      .await(ready);
 
-
+  // The default export, called when the required data (topojson file) is ready.
   function ready(error, topology) {
     data = topology;
 
@@ -191,12 +193,24 @@
 
     bins = hexbin(locations).sort(function(a, b) { return b.length - a.length;});
 
-    var distribution = bins.map(function(d) {return d.length});
-    var extent = d3.extent(distribution);
+    // calculate total yield for each bin
+    bins.map(function(bin) {
+     var sum = 0;
+     var length = bin.length;
+     for(var i = 0; i < length; i++) {
+       sum += +(bin[i].properties.yield)
+     }
+     bin.totalyield = sum;
+    })
 
-    radius = d3.scale.sqrt()
-      .domain(extent)
-      .range([4, 25]);
+    var yieldExtent = d3.extent(bins, function(bin) {
+     return bin.totalyield;
+    })
+
+    // set scale domains for nuclear test symbology
+    radius.domain(yieldExtent);
+    hexagonStroke.domain([1, d3.max(bins, function(bin) {return bin.length})]);
+
 
     // find dominate country in bin and use that for color coding
     bins.map(function(d) {
@@ -213,22 +227,18 @@
 
     background.on("mousemove", function() {
       var p = d3.mouse(this);
-      time0 = Date.now();
       globe.rotate([(λ(p[0]) + center[0] % 360), (φ(p[1]) + center[1] % 90)]);
       updateHexagons(projection, path);
-      time1 = Date.now();
-      timer.text((1000/(time1 - time0)).toPrecision(2));
     });
 
     // <defs> defined in index.html
-
     // DROP SHADOW
     ellipse
-          .attr("cx", width * .45 + margin.left + padding.left).attr("cy", outerHeight - globe.scale()*.20*2 - 10)
-          .attr("rx", globe.scale()*.7)
-          .attr("ry", globe.scale()*.20)
-          .attr("class", "noclicks")
-          .style("fill", "url(#drop_shadow)");
+        .attr("cx", width * .45).attr("cy", outerHeight - globe.scale()*.20*2 - 10)
+        .attr("rx", globe.scale()*.7)
+        .attr("ry", globe.scale()*.20)
+        .attr("class", "noclicks")
+        .style("fill", "url(#drop_shadow)");
 
     // NORTH EAST HIGHLIGHT (from sun)
     svg.append("circle")
@@ -245,15 +255,14 @@
           .style("fill", "url(#globe_shading)");
   }
 
-
   // ENTER, UPDATE, EXIT for hexagons (bins generated from hexbining of nuclear tests)
   function updateHexagons(projection, path) {
     var hexagons = g_hexagons.selectAll(".hexagon")
                       .data(bins.filter(function(d) {return visible(d, path)}))
 
-    hexagons.enter().append("path")
+    hexagons.enter().append("circle")
 
-    hexagons.attr("d", function(d) { return hexbin.hexagon(radius(d.length)); })
+    hexagons.attr("r", function(d) { return radius(d.totalyield); })
         .each(function(d) {
           var test = {
                 "type": "Point",
@@ -267,6 +276,7 @@
         .classed("hexagon", true)
         .attr("id", function(d) {return d.properties.country})
         .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
+        .style("stroke-width", function(d) {return hexagonStroke(d.length)})
         .style("fill-opacity", function(d) {return hexagonOpacity(d.distance)})
         .style("stroke-opacity", function(d) {return hexagonOpacity(d.distance)})
 

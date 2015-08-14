@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+  #fps {
+    position: absolute;
+    margin: 20px
+  }
+
+  .noclicks {
+    pointer-events:none;
+  }
+
+  svg {
+    top: 0;
+    position: absolute;
+    cursor: move;
+  }
+
+  .spike {
+    fill: none;
+    stroke: #000;
+    stroke-width: 1px;
+  }
+
+  .sphere {
+    fill: #f3efe7;
+    fill-opacity: 1;
+    stroke: none;
+    stroke-width: 1px;
+  }
+
+  .graticule {
+    fill: none;
+    stroke: #000F24;
+    stroke-width: 0.2px;
+    stroke-dasharray: 2,2;
+  }
+
+  path.country {
+    fill: none;
+    stroke: #5e5e5e;
+    stroke-width: .3px;
+    fill-opacity: 0.8;
+  }
+
+  path.land {
+    fill: #dad3c7;
+    stroke-width: .2px;
+    stroke: #798d94;
+  }
+
+  path#CHN {
+    fill: #de8b57;
+  }
+
+  path#USA {
+    fill: #6b6483;
+  }
+
+  path#FRA {
+    fill: #ac769d;
+  }
+
+  path#PAK {
+    fill: #6c8969;
+  }
+
+  path#RUS {
+    fill: #c15e50;
+  }
+
+  path#IND {
+    fill: #fdc576;
+  }
+
+  path#GBR {
+    fill: #cad15f;
+  }
+
+  path#PRK {
+    fill: #31061e;
+  }
+
+  /* The countries who conducted tests*/
+  .label-countries {
+    font-family: FranklinITCProLight,FranklinITCStdLight,Helvetica,Arial,sans-serif;
+    fill: #000F24;
+    font-style: normal;
+    text-anchor: middle;
+  }
+
+  /* Blurbs about areas affected*/
+  .blurb {
+    pointer-events: none;
+    fill: #000F24;
+    text-anchor: middle;
+    font-style: italic;
+    font-family: FranklinITCProLight,FranklinITCStdLight,Helvetica,Arial,sans-serif;
+  }
+
+  /* Dots to represent tests */
+  .event {
+    pointer-events: none;
+    fill: none;
+    stroke: #000000;
+    stroke-width: 2px;
+    stroke-dasharray: 5, 5;
+  }
+
+  /* Dots to represent tests */
+  .hexagon {
+    stroke: #222222;
+    stroke-width: 1px;
+  }
+
+  /* Specific dot styling */
+  #China {
+    fill: #de8b57;
+  }
+
+  #US {
+    fill: #6b6483;
+  }
+
+  #France {
+    fill: #ac769d;
+  }
+
+  #Pakistan {
+    fill: #6c8969;
+  }
+
+  #USSR {
+    fill: #c15e50;
+  }
+
+  #India {
+    fill: #fdc576;
+  }
+
+  #UK {
+    fill: #7bd52c;
+  }
+
+  #PRK {
+    fill: #31061e;
+  }
+
+</style>
+
+<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.indigo-pink.min.css">
+<script src="https://storage.googleapis.com/code.getmdl.io/1.0.0/material.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<body>
+  <div id="map">
+    <div id="timer">FPS: <span>?</span></div>
+    <svg width=960 height=960 id="nuclear-testing">
+      <defs><radialGradient id="globe_highlight" cx="75%" cy="25%"><stop offset="5%" stop-color="#fff" stop-opacity="0.6"></stop><stop offset="100%" stop-color="#b5b5b5" stop-opacity="0.2"></stop></radialGradient></defs>
+      <defs><radialGradient id="globe_shading" cx="55%" cy="45%"><stop offset="40%" stop-color="#000" stop-opacity="0"></stop><stop offset="100%" stop-color="f9cc9d" stop-opacity="0.2"></stop></radialGradient></defs>
+    </svg>
+  </div>
+</body>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+<script src="https://cdn.rawgit.com/bmershon/d3-chart-atlas/v1.0/d3.chart.js"></script>
+<script src="../../atlas.js"></script>
+<script src="hexbin.js"></script>
+<script src="app.js"></script>
