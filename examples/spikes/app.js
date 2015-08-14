@@ -14,7 +14,7 @@
   var opacityScale = d3.scale.linear().domain([.8*height/2, 0]).range([0, 1]);
   var tightOpacityScale = d3.scale.linear().domain([.6*height/2, 0]).range([0, .6]);
   var hexagonOpacity = d3.scale.linear().domain([.85*height/2, 0]).range([0, .8]);
-  var hexagonStroke = d3.scale.sqrt().range([0, 8]);
+  var hexagonStroke = d3.scale.sqrt().range([.5, 8]);
   var z = d3.scale.linear()
               .range([4, 250]);
   var data;
@@ -24,19 +24,19 @@
 
   var fps = d3.select("#fps span");
 
-  var vx = 10, vy = 20;
+  var p = [outerWidth/2, outerHeight/2], vx = -40, vy = 0;
 
   // map screen distance to incremental change in globe rotation (per unit time)
   // exponential function mimics a "gimbal-like" feel with softened control around center
   var dλ = d3.scale.pow()
       .domain([-outerWidth/2, outerWidth/2])
-      .range([12, -12])
-      .exponent(2);
+      .range([15, -15])
+      .exponent(2.2);
 
   var dφ = d3.scale.pow()
       .domain([-outerHeight/2, outerHeight/2])
-      .range([-12, +12])
-      .exponent(2);
+      .range([-15, 15])
+      .exponent(2.2);
 
   // clamp globe longitude rotation (if needed)
   var λ = d3.scale.linear().clamp(true)
@@ -245,7 +245,7 @@
     updateHexagons(projection, path);
 
     background.on("mousemove", function() {
-      var p = d3.mouse(this);
+      p = d3.mouse(this);
       vx = p[0] - outerWidth/2;
       vy = p[1] - outerHeight/2;
     });
@@ -291,9 +291,9 @@
           var centroid = path.centroid(test);
           var dx = centroid[0] - width/2;
           var dy = height/2 - centroid[1]; //dy is pos when centroid is above equator
-          d.angle = Math.atan2(dx, dy); // angle of spike
-          d.z = z(d.totalyield)
-          d.tip = [d.z * Math.cos(d.angle), -1 * d.z * Math.sin(d.angle)]
+          // d.angle = Math.atan2(dx, dy); // angle of spike
+          // d.z = z(d.totalyield)
+          // d.tip = [d.z * Math.cos(d.angle), -1 * d.z * Math.sin(d.angle)]
           d.distance = Math.sqrt(dx * dx + dy * dy);
         })
         .classed("hexagon", true)
