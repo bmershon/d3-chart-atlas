@@ -19,13 +19,34 @@
               .range([4, 250]);
   var data;
 
-  var λ = d3.scale.linear()
-      .domain([0, outerWidth])
-      .range([-210, 210]);
+  var time0 = Date.now(),
+      time1;
 
-  var φ = d3.scale.linear()
-      .domain([0, outerHeight])
-      .range([90, -90]);
+  var fps = d3.select("#fps span");
+
+  var vx = 10, vy = 20;
+
+  // map screen distance to incremental change in globe rotation (per unit time)
+  // exponential function mimics a "gimbal-like" feel with softened control around center
+  var dλ = d3.scale.pow()
+      .domain([-outerWidth/2, outerWidth/2])
+      .range([12, -12])
+      .exponent(2);
+
+  var dφ = d3.scale.pow()
+      .domain([-outerHeight/2, outerHeight/2])
+      .range([-12, +12])
+      .exponent(2);
+
+  // clamp globe longitude rotation (if needed)
+  var λ = d3.scale.linear().clamp(true)
+    .domain([-180, 180])
+    .range([-180, 180]);
+
+  // clamp globe latitude rotation
+  var φ = d3.scale.linear().clamp(true)
+    .domain([-90, 90])
+    .range([-90, 90]);
 
   var radius = d3.scale.linear()
               .range([4, 25]);
@@ -225,10 +246,19 @@
 
     background.on("mousemove", function() {
       var p = d3.mouse(this);
-      globe.rotate([(λ(p[0]) + center[0] % 360), (φ(p[1]) + center[1] % 90)]);
-      updateHexagons(projection, path);
-      updateSpikes(projection, path);
+      vx = p[0] - outerWidth/2;
+      vy = p[1] - outerHeight/2;
     });
+
+    d3.timer(function(){
+        center[0] = center[0] + dλ(vx);
+        center[1] = φ(center[1] + dφ(vy)); // clamped to avoid rotating past +/- 90 degrees
+        globe.rotate([center[0], center[1]]);
+        updateHexagons(projection, path);
+        time1 = Date.now();
+        fps.text(Math.round(1000 / (time1 - time0)));
+        time0 = time1;
+    })
 
     // NORTH EAST HIGHLIGHT (from sun)
     svg.append("circle")
@@ -261,40 +291,19 @@
           var centroid = path.centroid(test);
           var dx = centroid[0] - width/2;
           var dy = height/2 - centroid[1]; //dy is pos when centroid is above equator
-          d.angle = Math.atan(dy/dx); // angle of spike
+          d.angle = Math.atan2(dx, dy); // angle of spike
           d.z = z(d.totalyield)
           d.tip = [d.z * Math.cos(d.angle), -1 * d.z * Math.sin(d.angle)]
           d.distance = Math.sqrt(dx * dx + dy * dy);
         })
         .classed("hexagon", true)
         .attr("id", function(d) {return d.properties.country})
-        .attr("angle", function(d) {return d.angle * 180/Math.PI})
         .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
         .style("stroke-width", function(d) {return hexagonStroke(d.length)})
         .style("fill-opacity", function(d) {return hexagonOpacity(d.distance)})
         .style("stroke-opacity", function(d) {return hexagonOpacity(d.distance)})
 
     hexagons.exit().remove();
-  }
-
-
-  // ENTER, UPDATE, EXIT for hexagons (bins generated from hexbining of nuclear tests)
-  function updateSpikes(projection, path) {
-    var spikes = g_hexagons.selectAll(".spike")
-                      .data(bins.filter(function(d) {return visible(d, path)}))
-
-    spikes.enter().append("path")
-
-    spikes
-        .classed("spike", true)
-        .attr("id", function(d) {return d.properties.country})
-        .attr("transform", function(d) { return "translate(" + projection([d.x, d.y])[0] + "," + projection([d.x, d.y])[1] + ")"; })
-        .attr("d", function(d) {return "M0 0" + "l" + d.tip[0] + " " + (d.tip[1])})
-        .style("stroke-width", function(d) {return hexagonStroke(d.length)})
-        .style("fill-opacity", function(d) {return hexagonOpacity(d.distance)})
-        .style("stroke-opacity", function(d) {return hexagonOpacity(d.distance)})
-
-    spikes.exit().remove();
   }
 
   // Run a point through the geometry pipeline to test for orthographic clipping
